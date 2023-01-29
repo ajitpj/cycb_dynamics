@@ -13,6 +13,12 @@ from defaults import DefaultPars
 
 pars = DefaultPars()
 
+def meanint(label, image):
+    
+    mult = label * image
+    
+    return mult[np.nonzero(mult)].mean()
+
 def segmentROI(roi, strel):
     segmentedroi = np.zeros_like(roi)
     bkg = np.median(roi)
@@ -28,7 +34,7 @@ def predictShape(regionProperties, model):
     prediction = model.predict(regionProperties)
     return prediction
 
-def getregProps(segmented_im, mode = 'largest'):
+def getregProps(segmented_im, int_im, mode = 'largest'):
     '''
     Returns regionprops using the same structure used to train the
     RandomForest classifier in the script region_chars.py.
@@ -49,7 +55,8 @@ def getregProps(segmented_im, mode = 'largest'):
 
     '''
     
-    regions = regionprops(label(segmented_im))
+    regions = regionprops(label(segmented_im), intensity_image=int_im,
+                          extra_properties=[meanint])
     
     sortedRegions = sorted(regions, key=lambda r:r.area, reverse=True)
     
@@ -62,7 +69,8 @@ def getregProps(segmented_im, mode = 'largest'):
                      'extent':      [sortedRegions[0].extent],
                      'perimeter':   [sortedRegions[0].perimeter],
                      'conv_area':   [sortedRegions[0].area_convex],
-                     'feret':       [sortedRegions[0].feret_diameter_max]
+                     'feret':       [sortedRegions[0].feret_diameter_max],
+                     'meanint':     [sortedRegions[0].meanint]
                      }
                                   )
     elif mode == 'all':

@@ -63,14 +63,9 @@ def getROI(targetstack, tracklet, roisize):
     
     roi_stack = np.zeros((tracklength, 2*roisize, 2*roisize))
     
-    if (x.min() < roisize) or (x.max() > imwidth-roisize) or\
-       (y.min() < roisize) or (y.max() > imheight-roisize):
-       print('Cell too close to the edge!')
-    
-    else:
-        for t in np.arange(tracklength):
-            roi_stack[t, :, :] = targetstack[t, x[t]-roisize:x[t]+roisize, \
-                                                y[t]-roisize:y[t]+roisize]
+    for t in np.arange(tracklength):
+        roi_stack[t, :, :] = targetstack[t, x[t]-roisize:x[t]+roisize, \
+                                            y[t]-roisize:y[t]+roisize]
 
     return roi_stack
 

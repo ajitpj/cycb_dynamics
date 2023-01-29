@@ -87,17 +87,18 @@ shortlist = track_summary.loc[(track_summary['duration'] > 20)]\
 IDs = shortlist.ID.to_numpy()
 
 # Further shortlist by discarding cells too close to the edge
-nonEdgeIDs = []
+edgeIDs = []
 for ID in np.arange(len(shortlist)):
 
     y = np.array(tracks[int(shortlist.iloc[ID].ID)].x, dtype=int)
     x = np.array(tracks[int(shortlist.iloc[ID].ID)].y, dtype=int)
 
-    if (x.min() > pars.roisize) and (x.max() < imwidth - pars.roisize) and\
-       (y.min() > pars.roisize) and (y.max() < imheight - pars.roisize):
+    if (x.min() < pars.roisize) or (x.max() > imwidth - pars.roisize) or\
+       (y.min() < pars.roisize) or (y.max() > imheight - pars.roisize):
 
-        nonEdgeIDs.append(ID)
+        edgeIDs.append(ID)
 
+nonEdgeIDs = set(IDs) - set(edgeIDs)
 nonEdgeIDs = np.array(nonEdgeIDs)
 
 ###

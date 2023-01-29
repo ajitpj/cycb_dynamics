@@ -70,12 +70,15 @@ class Curate_tracks(MagicTemplate):
                                           self.pars.cellrad)
         
         # CLassify shape; metaphase plate = 1
-        mask_roi = utils.getROI(self.red, currentTrack, self.pars.roisize)
-        mask_roi = cycb.segmentROI(mask_roi, self.pars.strel7)
-        props = cycb.getregProps(mask_roi[0,:,:], 'largest')
+        red_roi = utils.getROI(self.red, currentTrack, self.pars.roisize)
+        mask_roi = cycb.segmentROI(red_roi, self.pars.strel7)
+        
+        props = cycb.getregProps(mask_roi[0,:,:], red_roi[0,:,:], 'largest')
         for i in np.arange(1, mask_roi.shape[0]):
             props = pd.concat([props, 
-                               cycb.getregProps(mask_roi[i,:,:], 'largest')
+                               cycb.getregProps(mask_roi[i,:,:], 
+                                                red_roi[i,:,:],
+                                                'largest')
                               ]
                               )
         

@@ -58,5 +58,5 @@ class DefaultPars:
         ]
         
         # Shape prediction model
-        filename = 'meta_plate.model'
+        filename = 'meta_plate_withint.model'#'meta_plate.model'
         self.loaded_model = pickle.load(open(filename, 'rb'))

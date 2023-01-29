@@ -15,7 +15,14 @@ import utils, defaults
 import seaborn as sns
 
 pars = defaults.DefaultPars()
-masks = imread('20221006_red_uncalibrated_D12_1_Simple Segmentation.tiff')
+masks = imread('../20221006_red_uncalibrated_D12_1_Simple Segmentation.tiff')
+red   = imread('../20221006_red_uncalibrated_D12_1.tif')
+
+def meanint(label, image):
+    
+    mult = label * image
+    
+    return mult[np.nonzero(mult)].mean()
 
 nuclei_area = []
 plates_area = []
@@ -33,14 +40,19 @@ nuclei_carea = []
 plates_carea = []
 nuclei_feret = []
 plates_feret = []
+nuclei_mean  = []
+plates_mean  = []
 
 for plane in np.arange(masks.shape[0]):
     im = masks[plane, :, :]
+    r  = red[plane, :, :]
     nuclei = im == 3
     plates = im == 1
     
-    nuclei_props = regionprops(label(nuclei), intensity_image=im)
-    plates_props = regionprops(label(plates), intensity_image=im)
+    nuclei_props = regionprops(label(nuclei), intensity_image=r, 
+                               extra_properties=[meanint])
+    plates_props = regionprops(label(plates), intensity_image=r,
+                               extra_properties=[meanint])
     
     
     for nucleus in np.arange(len(nuclei_props)):
@@ -52,6 +64,7 @@ for plane in np.arange(masks.shape[0]):
         nuclei_peri.append(nuclei_props[nucleus].perimeter)
         nuclei_carea.append(nuclei_props[nucleus].area_convex)
         nuclei_feret.append(nuclei_props[nucleus].feret_diameter_max)
+        nuclei_mean.append(nuclei_props[nucleus].meanint)
         
     for plate in np.arange(len(plates_props)):
         plates_ecce.append(plates_props[plate].eccentricity)
@@ -62,6 +75,7 @@ for plane in np.arange(masks.shape[0]):
         plates_peri.append(plates_props[plate].perimeter)
         plates_carea.append(plates_props[plate].area_convex)
         plates_feret.append(plates_props[plate].feret_diameter_max)
+        plates_mean.append(plates_props[plate].meanint)
     
     print(plane)
 
@@ -73,7 +87,8 @@ nuclei_props = pd.DataFrame({'eccentricity':nuclei_ecce,
                              'extent':      nuclei_extnt,
                              'perimeter':   nuclei_peri,
                              'conv_area':   nuclei_carea,
-                             'feret':       nuclei_feret})
+                             'feret':       nuclei_feret,
+                             'meanint':     nuclei_mean})
 
 n = nuclei_props.loc[(nuclei_props.area > pars.nucsize_min)]\
                 .loc[ (nuclei_props.area < pars.nucsize_max)]
@@ -85,7 +100,9 @@ plates_props = pd.DataFrame({'eccentricity':plates_ecce,
                              'extent':      plates_extnt,
                              'perimeter':   plates_peri,
                              'conv_area':   plates_carea,
-                             'feret':       plates_feret})
+                             'feret':       plates_feret,
+                             'meanint':     plates_mean
+                             })
 
 p = plates_props.loc[(plates_props.area > pars.nucsize_min)]\
                 .loc[ (plates_props.area < pars.nucsize_max)]
@@ -95,7 +112,7 @@ p['label'] = 1
 
 combined = pd.concat([n,p])
 Y = combined.label
-combined.drop(columns=['label'])
+combined.drop(columns=['label'], inplace = True)
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -113,11 +130,11 @@ preds = clf.predict(X_test)
 import pickle
 
 # save the model to disk
-filename = 'meta_plate.model'
+filename = 'meta_plate_withint.model'
 pickle.dump(clf, open(filename, 'wb'))
 
 # load the model from disk
-loaded_model = pickle.load(open(filename, 'rb'))
+# loaded_model = pickle.load(open(filename, 'rb'))
 # result = loaded_model.score(X_test, y_test)
 # print(result)
 
