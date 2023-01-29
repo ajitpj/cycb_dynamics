@@ -1,7 +1,0 @@
-# Files
-*.log
-
-# Directories
-temp/
-.spyproject/
-__pychache__
