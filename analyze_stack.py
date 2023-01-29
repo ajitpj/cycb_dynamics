@@ -28,7 +28,7 @@ red_file = '20221006_red_uncalibrated_D12_1.tif'
 # Read stack attributes
 red = imread(red_file)
 green = imread(green_file)
-phase = imread(phase_file)
+# phase = imread(phase_file)
 if not green.shape == red.shape:
     raise ValueError('RFP and GFP stack size mismatch, can\'t proceed!')
 
@@ -98,6 +98,8 @@ for ID in np.arange(len(shortlist)):
 
         nonEdgeIDs.append(ID)
 
+nonEdgeIDs = np.array(nonEdgeIDs)
+
 ###
 # Save data objects for later analysis
 
@@ -110,10 +112,10 @@ viewer.add_image(green, colormap='turbo', contrast_limits=[200, 400])
 # viewer.add_tracks(data, properties=properties, graph=graph)
 
 # Add the GUI to curate tracks
-# del Curate_tracks
-# from GUI_v8 import Curate_tracks
+del Curate_tracks
+from GUI_v9 import Curate_tracks
 if __name__ == "__main__":
-    a = Curate_tracks(green, redseg, phase, nonEdgeIDs, tracks)
+    a = Curate_tracks(green, redseg, red, nonEdgeIDs, tracks)
     viewer.window.add_dock_widget(a)
     a.show()
 
