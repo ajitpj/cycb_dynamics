@@ -1,9 +1,11 @@
 from skimage.morphology import white_tophat
-from skimage.morphology import square, dilation
-from skimage.filters import threshold_isodata, gaussian, threshold_multiotsu
+from skimage.morphology import square, dilation, erosion
+from skimage.filters import threshold_isodata, gaussian
+from skimage.filters import threshold_multiotsu, threshold_otsu
 from skimage.feature import match_template
 from skimage.measure import label, regionprops
 import numpy as np
+import pandas as pd
 import utils
 
 # Default values for key parameters/variable
@@ -11,9 +13,63 @@ from defaults import DefaultPars
 
 pars = DefaultPars()
 
-def predictShape(im, model):
-    prediction = []
+def segmentROI(roi, strel):
+    segmentedroi = np.zeros_like(roi)
+    bkg = np.median(roi)
+    for p in np.arange(segmentedroi.shape[0]):
+        plane = roi[p,:,:] - bkg
+        thresh = threshold_otsu(plane)
+        plane = plane > thresh
+        segmentedroi[p,:,:]  = erosion(plane, strel)
+        
+    return segmentedroi
+
+def predictShape(regionProperties, model):
+    prediction = model.predict(regionProperties)
     return prediction
+
+def getregProps(segmented_im, mode = 'largest'):
+    '''
+    Returns regionprops using the same structure used to train the
+    RandomForest classifier in the script region_chars.py.
+    By default, only returns the properties of the largest region.
+
+    Parameters
+    ----------
+    segmented_im : bool array
+        segmented image roi (or image).
+    
+    mode:  "largest" or "all"
+
+    Returns
+    -------
+    largestregionProps : dataframe
+        Pandas dataframe with the same columns as the one used 
+        in the script region_chars.py.
+
+    '''
+    
+    regions = regionprops(label(segmented_im))
+    
+    sortedRegions = sorted(regions, key=lambda r:r.area, reverse=True)
+    
+    if mode == 'largest':
+        Props = pd.DataFrame(
+                    {'eccentricity':[sortedRegions[0].eccentricity], 
+                     'area':        [sortedRegions[0].area],
+                     'major':       [sortedRegions[0].axis_major_length],
+                     'minor':       [sortedRegions[0].axis_minor_length],
+                     'extent':      [sortedRegions[0].extent],
+                     'perimeter':   [sortedRegions[0].perimeter],
+                     'conv_area':   [sortedRegions[0].area_convex],
+                     'feret':       [sortedRegions[0].feret_diameter_max]
+                     }
+                                  )
+    elif mode == 'all':
+        Props = []
+            
+    
+    return Props
 
 def shapeMetric(phImg, kernel, binsize):
     '''

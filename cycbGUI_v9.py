@@ -106,7 +106,7 @@ class Curate_tracks(MagicTemplate):
         self.plt.plot(self.sig_arr[:,0], 'r.-')
         self.plt.plot(self.sig_arr[:,3], 'b.-')
         meta = np.nonzero(self.prediction)
-        self.plt.plot(meta, self.sig_arr[meta, 3], 'g-')
+        self.plt.plot(meta, self.sig_arr[meta, 3], 'go')
         # self.plt.plot(mitosisflag)
         self.plt.legend(['Cytoplasmic', 'Nuclear'])
         self.plt.xlabel('time (x5 min)')

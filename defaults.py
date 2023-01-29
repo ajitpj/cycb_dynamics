@@ -8,6 +8,7 @@ Default parameter values stored for convenience.
 """
 from skimage.morphology import square
 from utils import drawAnnulus
+import pickle
 
 class DefaultPars:
     def __init__(self):
@@ -36,6 +37,7 @@ class DefaultPars:
                                       )
     
         # For phase image convolution
+        self.strel7   = square(7)
         self.strel5   = square(5)
         self.strel3   = square(3)
         self.kernel   = drawAnnulus(81,32,35,(40,40))
@@ -54,3 +56,7 @@ class DefaultPars:
             "motion",
             "visual",
         ]
+        
+        # Shape prediction model
+        filename = 'meta_plate.model'
+        self.loaded_model = pickle.load(open(filename, 'rb'))

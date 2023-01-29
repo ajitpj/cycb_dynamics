@@ -14,16 +14,16 @@ import numpy as np
 import pandas as pd
 import cycb, utils
 from trackAnalysis import summarizetracks
-from GUI_v8 import Curate_tracks
+from cycbGUI_v9 import Curate_tracks
 
 from defaults import DefaultPars
 pars = DefaultPars()
 
 # Set file names for later recall
 wdir = os.getcwd()
-phase_file = '20221006_D12_1.tif'
-green_file = '20221006_corrected_green_D12_1.tif'
-red_file = '20221006_red_uncalibrated_D12_1.tif'
+phase_file = '../20221006_D12_1.tif'
+green_file = '../20221006_corrected_green_D12_1.tif'
+red_file = '../20221006_red_uncalibrated_D12_1.tif'
 
 # Read stack attributes
 red = imread(red_file)
@@ -32,11 +32,11 @@ green = imread(green_file)
 if not green.shape == red.shape:
     raise ValueError('RFP and GFP stack size mismatch, can\'t proceed!')
 
-imwidth = red.shape[1]
+imwidth  = red.shape[1]
 imheight = red.shape[2]
-planes = red.shape[0]
+planes   = red.shape[0]
 
-redseg = np.zeros_like(red)  # Used to retrieve ROIs from green
+redseg   = np.zeros_like(red)  # Used to retrieve ROIs from green
 trackseg = np.zeros_like(red)  # Used for tracking
 
 print('Now segmenting DNA images...')
@@ -107,13 +107,13 @@ nonEdgeIDs = np.array(nonEdgeIDs)
 # Open viewer and display stacks
 redseg = redseg.astype('uint')
 viewer = napari.Viewer()
-viewer.add_image(red, opacity=0.5, colormap='gray', contrast_limits=[80, 400])
 viewer.add_image(green, colormap='turbo', contrast_limits=[200, 400])
-# viewer.add_tracks(data, properties=properties, graph=graph)
+viewer.add_image(red, opacity=0.5, colormap='gray', contrast_limits=[80, 400])
+viewer.add_tracks(data, properties=properties, graph=graph)
 
 # Add the GUI to curate tracks
 del Curate_tracks
-from GUI_v9 import Curate_tracks
+from cycbGUI_v9 import Curate_tracks
 if __name__ == "__main__":
     a = Curate_tracks(green, redseg, red, nonEdgeIDs, tracks)
     viewer.window.add_dock_widget(a)

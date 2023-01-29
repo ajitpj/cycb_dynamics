@@ -20,7 +20,9 @@ def exportsavedTracks_to(savedTracks: dict, max_length: int):
     ----------
     savedTracks : dict
         cycb_data dictionary with btrack IDs as keys and the
-        sig_arr output of cycb.measureFluorescence function as the data.
+        (sig_arr, prediciton) tuple as the output where,
+        sig_arr = cycb.measureFluorescence function as the data.
+        prediction = 0 or 1 prediction for metaphase plate shape
     max_length  : int
         max_length = Number of datapoints in the image
 
@@ -29,16 +31,17 @@ def exportsavedTracks_to(savedTracks: dict, max_length: int):
     data_array: numpy array with the following dimensions
                 dim 0 = Track serial index
                 dim 1 = Cycb measurements
-                dim 3 = the six columns of the 
+                dim 3 = classification + the six columns of the 
                         cycb.measureFluorescence function
 
     '''
     numTracks = len(savedTracks)
-    data_array     = np.zeros((numTracks, max_length, 6))
+    data_array     = np.zeros((numTracks, max_length, 7))
     
     for index, key in enumerate(savedTracks.keys()):
-        tracklength = savedTracks[key].shape[0]
-        data_array[index, 0:tracklength, :] = savedTracks[key]
+        tracklength = savedTracks[key][0].shape[0]
+        data_array[index, 0:tracklength, 0]    = savedTracks[key][1]
+        data_array[index, 0:tracklength, 1::]  = savedTracks[key][0]
     
     return data_array
 
@@ -58,13 +61,13 @@ def getROI(targetstack, tracklet, roisize):
     y = np.array(tracklet.x, dtype=int)
     x = np.array(tracklet.y, dtype=int)
     
+    roi_stack = np.zeros((tracklength, 2*roisize, 2*roisize))
+    
     if (x.min() < roisize) or (x.max() > imwidth-roisize) or\
        (y.min() < roisize) or (y.max() > imheight-roisize):
        print('Cell too close to the edge!')
-       roi_stack = []
+    
     else:
-        roi_stack = np.zeros((tracklength, 2*roisize, 2*roisize))
-        
         for t in np.arange(tracklength):
             roi_stack[t, :, :] = targetstack[t, x[t]-roisize:x[t]+roisize, \
                                                 y[t]-roisize:y[t]+roisize]
