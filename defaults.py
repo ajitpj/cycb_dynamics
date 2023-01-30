@@ -37,6 +37,8 @@ class DefaultPars:
                                       )
     
         # For phase image convolution
+        self.strel51  = square(51)
+        self.strel11  = square(11)
         self.strel7   = square(7)
         self.strel5   = square(5)
         self.strel3   = square(3)

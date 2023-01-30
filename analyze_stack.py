@@ -28,7 +28,7 @@ red_file = '../20221006_red_uncalibrated_D12_1.tif'
 # Read stack attributes
 red = imread(red_file)
 green = imread(green_file)
-# phase = imread(phase_file)
+phase = imread(phase_file)
 if not green.shape == red.shape:
     raise ValueError('RFP and GFP stack size mismatch, can\'t proceed!')
 
@@ -39,12 +39,22 @@ planes   = red.shape[0]
 redseg   = np.zeros_like(red)  # Used to retrieve ROIs from green
 trackseg = np.zeros_like(red)  # Used for tracking
 
+green_bkg_data  = np.zeros((planes, 3))
 print('Now segmenting DNA images...')
 for plane in np.arange(planes):
     # DNA stain thresholding
     im = red[plane, :, :].copy()
     redseg[plane, :, :], trackseg[plane, :, :] \
         = cycb.preprocess(red, plane, pars.strel_cell)
+    
+    # calculate the green image floor
+    # bkg_mask = cycb.calculateBKG(phase, plane)
+    # greenimg = green[plane, :, :]
+    # nonzeros = greenimg[np.where(bkg_mask == 1)]
+    # green_bkg_data[plane, 0] = nonzeros.mean()
+    # green_bkg_data[plane, 1] = nonzeros.std()
+    # green_bkg_data[plane, 2] = len(nonzeros)
+    
     print('Finished plane# %d' % plane)
 
 
@@ -93,13 +103,14 @@ for ID in np.arange(len(shortlist)):
     y = np.array(tracks[int(shortlist.iloc[ID].ID)].x, dtype=int)
     x = np.array(tracks[int(shortlist.iloc[ID].ID)].y, dtype=int)
 
-    if (x.min() < pars.roisize) or (x.max() > imwidth - pars.roisize) or\
-       (y.min() < pars.roisize) or (y.max() > imheight - pars.roisize):
+    if (x.min() < pars.roisize or x.max() > imwidth - pars.roisize or\
+       y.min() < pars.roisize or y.max() > imheight - pars.roisize):
 
         edgeIDs.append(ID)
 
 nonEdgeIDs = set(IDs) - set(edgeIDs)
-nonEdgeIDs = np.array(nonEdgeIDs)
+shortlistIDs = list(nonEdgeIDs)
+shortlistIDs = np.array(shortlistIDs)
 
 ###
 # Save data objects for later analysis
@@ -116,8 +127,8 @@ viewer.add_tracks(data, properties=properties, graph=graph)
 del Curate_tracks
 from cycbGUI_v9 import Curate_tracks
 if __name__ == "__main__":
-    a = Curate_tracks(green, redseg, red, nonEdgeIDs, tracks)
-    viewer.window.add_dock_widget(a)
-    a.show()
+    v = Curate_tracks(green, redseg, red, shortlistIDs, tracks)
+    viewer.window.add_dock_widget(v)
+    v.show()
 
-    cycb_data = utils.exportsavedTracks_to(a.cycb_data, planes)
+    cycb_data = utils.exportsavedTracks_to(v.cycb_data, planes)

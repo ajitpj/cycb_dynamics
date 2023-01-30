@@ -1,7 +1,8 @@
 from skimage.morphology import white_tophat
-from skimage.morphology import square, dilation, erosion
+from skimage.morphology import square, dilation, erosion, closing
 from skimage.filters import threshold_isodata, gaussian
 from skimage.filters import threshold_multiotsu, threshold_otsu
+from skimage.filters.rank import gradient
 from skimage.feature import match_template
 from skimage.measure import label, regionprops
 import numpy as np
@@ -13,13 +14,76 @@ from defaults import DefaultPars
 
 pars = DefaultPars()
 
-def meanint(label, image):
+def calculateBKG(phase_img_stack, plane: int):
+    '''
+    Calculates the background floor from the empty region
+    of the well.
+
+    Parameters
+    ----------
+    imstack : TYPE
+        Image stack.
+    plane : TYPE
+        DESCRIPTION.
+    strel : footprint
+        Use strel_cell
+
+    Returns
+    -------
+    bkg : TYPE
+        DESCRIPTION.
+
+    '''
+    img = phase_img_stack[plane, :, :]
+    img = gaussian(img)
+    img = white_tophat(img, pars.strel_cell)
+    img = gradient(img, pars.strel11)
+    img = closing(img, pars.strel51)
+    bkg_mask = img == 0
     
+    return bkg_mask
+
+
+def meanint(label, image):
+    '''
+    Unnecessary function for calculating mean intensity 
+    within the masked region of an image.
+
+    Parameters
+    ----------
+    label : TYPE
+        DESCRIPTION.
+    image : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    '''
     mult = label * image
     
     return mult[np.nonzero(mult)].mean()
 
 def segmentROI(roi, strel):
+    '''
+    Function written specifically to preprocess the region of interest
+    and calculate regionprops for predicting whether the largest region
+    is a metaphase plate or an interphase nucleus
+    
+    Parameters
+    ----------
+    label : TYPE
+        DESCRIPTION.
+    image : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+    '''
     segmentedroi = np.zeros_like(roi)
     bkg = np.median(roi)
     for p in np.arange(segmentedroi.shape[0]):
@@ -31,6 +95,23 @@ def segmentROI(roi, strel):
     return segmentedroi
 
 def predictShape(regionProperties, model):
+    '''
+    Uses the model to predict whether the shape is a metaphase
+    plate or an interphase nucleus. 
+
+    Parameters
+    ----------
+    regionProperties : TYPE
+        pandas dataframe with properties used in the script region_chars.py.
+    model : TYPE
+        saved trained model file.
+
+    Returns
+    -------
+    prediction : TYPE
+        Prediction: 0 = nucleus, 1 = metaphase plate.
+
+    '''
     prediction = model.predict(regionProperties)
     return prediction
 

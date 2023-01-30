@@ -54,8 +54,8 @@ def getROI(targetstack, tracklet, roisize):
     strel       = structuring element for creating ring around the nucleus
     '''
     
-    imwidth  = targetstack.shape[1]
-    imheight = targetstack.shape[2]
+    # imwidth  = targetstack.shape[1]
+    # imheight = targetstack.shape[2]
     tracklength = len(tracklet)
     
     y = np.array(tracklet.x, dtype=int)
