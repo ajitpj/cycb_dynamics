@@ -60,6 +60,7 @@ def getROI(targetstack, tracklet, roisize):
     
     y = np.array(tracklet.x, dtype=int)
     x = np.array(tracklet.y, dtype=int)
+    print(tracklet.ID)
     
     roi_stack = np.zeros((tracklength, 2*roisize, 2*roisize))
     

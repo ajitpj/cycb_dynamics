@@ -143,17 +143,16 @@ def getregProps(segmented_im, int_im, mode = 'largest'):
     
     if mode == 'largest':
         Props = pd.DataFrame(
-                    {'eccentricity':[sortedRegions[0].eccentricity], 
+                    { 
                      'area':        [sortedRegions[0].area],
                      'major':       [sortedRegions[0].axis_major_length],
                      'minor':       [sortedRegions[0].axis_minor_length],
                      'extent':      [sortedRegions[0].extent],
                      'perimeter':   [sortedRegions[0].perimeter],
-                     'conv_area':   [sortedRegions[0].area_convex],
-                     'feret':       [sortedRegions[0].feret_diameter_max],
-                     'meanint':     [sortedRegions[0].meanint]
+                     'meanint':     [sortedRegions[0].meanint/300]
                      }
                                   )
+
     elif mode == 'all':
         Props = []
             

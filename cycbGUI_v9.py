@@ -58,7 +58,7 @@ class Curate_tracks(MagicTemplate):
     def _displayTrack(self):
         
         selectedTrack = int(self.Frame1.TrackNum.value)
-        
+        print(selectedTrack)
         currentID    = self.IDs[selectedTrack]
         currentTrack = self.tracks[currentID]
         
@@ -71,7 +71,7 @@ class Curate_tracks(MagicTemplate):
         
         # CLassify shape; metaphase plate = 1
         red_roi = utils.getROI(self.red, currentTrack, self.pars.roisize)
-        mask_roi = cycb.segmentROI(red_roi, self.pars.strel7)
+        mask_roi = cycb.segmentROI(red_roi, self.pars.strel3)
         
         props = cycb.getregProps(mask_roi[0,:,:], red_roi[0,:,:], 'largest')
         for i in np.arange(1, mask_roi.shape[0]):
@@ -122,7 +122,7 @@ class Curate_tracks(MagicTemplate):
     @Frame2.but2.connect
     def _saveTrack(self):
         selectedTrack = int(self.Frame1.TrackNum.value)
-        currentID    = self.IDs[self.IDs[selectedTrack]]
+        currentID    = self.IDs[selectedTrack]
         self.cycb_data[currentID] = (self.sig_arr, self.prediction)
         self.Frame1.TrackNum.value  =  str(selectedTrack+1)
         

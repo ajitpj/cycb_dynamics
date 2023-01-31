@@ -6,6 +6,7 @@ Created on Fri Jan 20 17:38:21 2023
 @author: ajitj
 """
 import pandas as pd
+import numpy as np
 
 
 def summarizetracks(tracks):
@@ -52,12 +53,38 @@ def summarizetracks(tracks):
                                   'parent': parent})
     return summary_table
 
-def displayTracklet(tracklet, viewer):
+def convertTracks(tracks):
     '''
-    Displays a selected tracklet as a graph and napari layer
-    INPUTS:
-        tracklet: btrack tracklet
-        viewer  : napari viewer object
+    Function converts the btrack output 'tracks', which is a list of ordered
+    dictionaries, into a dictionary with tracklet.ID as the key and the entire
+    tracklet (includig the ID).
+
+    Parameters
+    ----------
+    tracks : btrack output
+        Output from the btrack program.
+
+    Returns
+    -------
+    convertedTracks : dictionary
+        a dictionary with tracklet.ID as the key and the entire
+        tracklet (includig the ID)..
+
     '''
     
-    return
+    convertedTracks = {}
+    
+    for i in np.arange(len(tracks)):
+        convertedTracks[tracks[i].ID] = tracks[i]
+    
+    
+    return convertedTracks
+# def displayTracklet(tracklet, viewer):
+#     '''
+#     Displays a selected tracklet as a graph and napari layer
+#     INPUTS:
+#         tracklet: btrack tracklet
+#         viewer  : napari viewer object
+#     '''
+    
+#     return

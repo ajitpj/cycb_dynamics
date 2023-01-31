@@ -22,7 +22,7 @@ class DefaultPars:
         self.multiplier = 1.0 
         # Based on a small sample of HeLa cells, 
         # 750 < nuc_area < 2600 before thresholding
-        self.nucsize_min = 350 
+        self.nucsize_min = 500 
         self.nucsize_max = 2800
         
         
@@ -51,6 +51,9 @@ class DefaultPars:
         # btrack configuration
         # features to be calculated from image data
         self.btrack_config_file = 'cell_config.json'
+        # "time_thresh": 4, #original value = 2
+        # "dist_thresh": 40, changed to 20
+        
         self.features = ["area", "major_axis_length", "minor_axis_length",
                     "orientation", "solidity",]
 
@@ -60,5 +63,5 @@ class DefaultPars:
         ]
         
         # Shape prediction model
-        filename = 'meta_plate_withint.model'#'meta_plate.model'
+        filename = 'meta_plate_normalized.model'#'meta_plate.model'
         self.loaded_model = pickle.load(open(filename, 'rb'))
